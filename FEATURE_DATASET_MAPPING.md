@@ -10,7 +10,6 @@
 | **Risk Assessment** | ❌ None | ✅ OpenRouter | Mistral-7B-Instruct |
 | **Validation Score** | ❌ None | ✅ OpenRouter | Mistral-7B-Instruct |
 | **Partner Matching** | ✅ professional_profiles.csv | ❌ None | sentence-transformers |
-| **AI Chatbot** | ❌ None | ✅ OpenRouter | Mistral-7B-Instruct |
 
 ---
 
@@ -61,23 +60,16 @@ API: None
 Process: Embed user profile → Cosine similarity with dataset → Top matches
 ```
 
-### 7. AI Chatbot Assistant
-```
-Dataset: None
-API: OpenRouter (Mistral-7B)
-Process: User question → LLM provides guidance and navigation help
-```
-
 ---
 
 ## Dataset Files Summary
 
 | File | Location | Records | Format |
 |------|----------|---------|--------|
-| trend_signals.csv | backend/datasets/processed/ | 27 | industry, trend |
-| startup_metadata.csv | backend/datasets/processed/ | 40 | name, category, description |
-| startup_index.faiss | backend/datasets/processed/ | 40 vectors | FAISS binary index |
-| professional_profiles.csv | backend/datasets/processed/ | 20 | name, industry, skills, linkedin_url |
+| trend_signals.csv | datasets/processed/ | 27 | industry, trend |
+| startup_metadata.csv | datasets/processed/ | 40 | name, category, description |
+| startup_index.faiss | datasets/processed/ | 40 vectors | FAISS binary index |
+| professional_profiles.csv | datasets/processed/ | 20 | name, industry, skills, linkedin_url |
 
 ---
 
@@ -89,4 +81,4 @@ OPENROUTER_API_KEY=sk-or-v1-your-key
 OPENROUTER_MODEL=mistralai/mistral-7b-instruct:free
 ```
 
-**Note:** The existing OpenRouter key works for all features including the chatbot.
+**Note:** The existing OpenRouter key works for all features.
