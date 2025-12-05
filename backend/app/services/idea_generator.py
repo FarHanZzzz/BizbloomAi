@@ -11,62 +11,73 @@ Return STRICT JSON with keys: ideas -> list of 3 objects, each with name, proble
 No commentary. Keep sentences concise."""
 
 
-def generate_refined_ideas(user_input: str) -> List[RefinedIdea]:
-    if not settings.openai_api_key:
-        # Offline fallback for development
-        return [
-            RefinedIdea(
-                name="Idea Alpha",
-                problem="Users struggle to validate ideas quickly.",
-                solution="AI generates structured startup briefs with risks and competitors.",
-                value_proposition="Faster validation with grounded insights in minutes.",
-            ),
-            RefinedIdea(
-                name="Idea Beta",
-                problem="Founders lack concise market snapshots.",
-                solution="Summaries with industry, trends, and gaps from public data.",
-                value_proposition="Actionable clarity for early market moves.",
-            ),
-            RefinedIdea(
-                name="Idea Gamma",
-                problem="Teams need quick partner matches.",
-                solution="Profile-based matching of complementary founders.",
-                value_proposition="Better teaming via skill and interest overlap.",
-            ),
-        ]
+def _fallback_ideas() -> List[RefinedIdea]:
+    """Return demo ideas when OpenAI is unavailable."""
+    return [
+        RefinedIdea(
+            name="Idea Alpha",
+            problem="Users struggle to validate ideas quickly.",
+            solution="AI generates structured startup briefs with risks and competitors.",
+            value_proposition="Faster validation with grounded insights in minutes.",
+        ),
+        RefinedIdea(
+            name="Idea Beta",
+            problem="Founders lack concise market snapshots.",
+            solution="Summaries with industry, trends, and gaps from public data.",
+            value_proposition="Actionable clarity for early market moves.",
+        ),
+        RefinedIdea(
+            name="Idea Gamma",
+            problem="Teams need quick partner matches.",
+            solution="Profile-based matching of complementary founders.",
+            value_proposition="Better teaming via skill and interest overlap.",
+        ),
+    ]
 
-    client = OpenAI(api_key=settings.openai_api_key)
-    completion = client.chat.completions.create(
-        model=settings.model_name,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_input},
-        ],
-        temperature=0.2,
-    )
-    content = completion.choices[0].message.content
-    # Defensive parsing to structured Pydantic objects
-    import json
+
+def generate_refined_ideas(user_input: str) -> List[RefinedIdea]:
+    # Check if API key is missing or placeholder
+    api_key = settings.openai_api_key
+    if not api_key or api_key.startswith("your-") or len(api_key) < 20:
+        return _fallback_ideas()
 
     try:
-        payload = json.loads(content)
-        ideas_raw = payload.get("ideas", [])
-        refined = [RefinedIdea(**idea) for idea in ideas_raw][:3]
-        if len(refined) == 3:
-            return refined
-    except Exception:
-        pass
-
-    # Fallback to first 3 parsed lines if JSON failed
-    fallback = []
-    for idx in range(3):
-        fallback.append(
-            RefinedIdea(
-                name=f"Idea {idx+1}",
-                problem="Problem unavailable due to parsing error.",
-                solution="Solution unavailable due to parsing error.",
-                value_proposition="Value proposition unavailable.",
-            )
+        client = OpenAI(api_key=api_key)
+        completion = client.chat.completions.create(
+            model=settings.model_name,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_input},
+            ],
+            temperature=0.2,
         )
-    return fallback
+        content = completion.choices[0].message.content
+        # Defensive parsing to structured Pydantic objects
+        import json
+
+        try:
+            payload = json.loads(content)
+            ideas_raw = payload.get("ideas", [])
+            refined = [RefinedIdea(**idea) for idea in ideas_raw][:3]
+            if len(refined) == 3:
+                return refined
+        except Exception:
+            pass
+
+        # Fallback to first 3 parsed lines if JSON failed
+        fallback = []
+        for idx in range(3):
+            fallback.append(
+                RefinedIdea(
+                    name=f"Idea {idx+1}",
+                    problem="Problem unavailable due to parsing error.",
+                    solution="Solution unavailable due to parsing error.",
+                    value_proposition="Value proposition unavailable.",
+                )
+            )
+        return fallback
+    except Exception:
+        # API error (invalid key, rate limit, etc.) - return fallback
+        return _fallback_ideas()
+
 

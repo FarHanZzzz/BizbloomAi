@@ -4,7 +4,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 from app.config import settings
-from app.database import get_supabase
+from app.database import get_supabase, is_supabase_configured
 from app.models.schemas import PartnerProfile
 
 
@@ -20,6 +20,29 @@ class PartnerMatcher:
         return float(np.dot(a, b) / denom)
 
     def suggest(self, user_profile: dict, limit: int = 3) -> List[PartnerProfile]:
+        if not is_supabase_configured():
+            # Demo mode: return placeholder partners
+            return [
+                PartnerProfile(
+                    name="Alex Chen",
+                    interest_overlap_score=0.89,
+                    skills=["Product Design", "Go-To-Market"],
+                    contact_hint="alex.c@demo.com",
+                ),
+                PartnerProfile(
+                    name="Jordan Taylor",
+                    interest_overlap_score=0.76,
+                    skills=["Engineering", "Data Science"],
+                    contact_hint="jordan.t@demo.com",
+                ),
+                PartnerProfile(
+                    name="Sam Rivera",
+                    interest_overlap_score=0.68,
+                    skills=["Sales", "Business Development"],
+                    contact_hint="sam.r@demo.com",
+                ),
+            ][:limit]
+
         client = get_supabase()
         others = client.table("users").select("email,profile").limit(50).execute().data or []
         base_vec = self._encode(" ".join(user_profile.get("interests", []) + user_profile.get("skills", [])))

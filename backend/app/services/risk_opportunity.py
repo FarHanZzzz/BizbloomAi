@@ -11,45 +11,53 @@ Return JSON with keys: opportunities (2 short bullets <=15 words), risks (2 bull
 No commentary."""
 
 
-def assess_risks(idea: RefinedIdea) -> RiskOpportunity:
-    if not settings.openai_api_key:
-        return RiskOpportunity(
-            opportunities=[
-                "Ride AI adoption wave",
-                "Early mover in niche",
-            ],
-            risks=[
-                "Data quality issues",
-                "Competitive fast followers",
-            ],
-            mitigation="Pilot with small cohort; refine quickly",
-        )
-
-    client = OpenAI(api_key=settings.openai_api_key)
-    completion = client.chat.completions.create(
-        model=settings.model_name,
-        messages=[
-            {"role": "system", "content": PROMPT},
-            {
-                "role": "user",
-                "content": f"Name: {idea.name}\nProblem: {idea.problem}\nSolution: {idea.solution}\nValue: {idea.value_proposition}",
-            },
+def _fallback_risks() -> RiskOpportunity:
+    return RiskOpportunity(
+        opportunities=[
+            "Ride AI adoption wave",
+            "Early mover in niche",
         ],
-        temperature=0.3,
+        risks=[
+            "Data quality issues",
+            "Competitive fast followers",
+        ],
+        mitigation="Pilot with small cohort; refine quickly",
     )
-    import json
+
+
+def assess_risks(idea: RefinedIdea) -> RiskOpportunity:
+    api_key = settings.openai_api_key
+    if not api_key or api_key.startswith("your-") or len(api_key) < 20:
+        return _fallback_risks()
 
     try:
-        payload = json.loads(completion.choices[0].message.content)
-        return RiskOpportunity(
-            opportunities=payload.get("opportunities", [])[:2],
-            risks=payload.get("risks", [])[:2],
-            mitigation=payload.get("mitigation", ""),
+        client = OpenAI(api_key=api_key)
+        completion = client.chat.completions.create(
+            model=settings.model_name,
+            messages=[
+                {"role": "system", "content": PROMPT},
+                {
+                    "role": "user",
+                    "content": f"Name: {idea.name}\nProblem: {idea.problem}\nSolution: {idea.solution}\nValue: {idea.value_proposition}",
+                },
+            ],
+            temperature=0.3,
         )
+        import json
+
+        try:
+            payload = json.loads(completion.choices[0].message.content)
+            return RiskOpportunity(
+                opportunities=payload.get("opportunities", [])[:2],
+                risks=payload.get("risks", [])[:2],
+                mitigation=payload.get("mitigation", ""),
+            )
+        except Exception:
+            return RiskOpportunity(
+                opportunities=["Growing market", "Strong differentiation"],
+                risks=["Execution risk", "Market timing risk"],
+                mitigation="Phase launches; validate with early users",
+            )
     except Exception:
-        return RiskOpportunity(
-            opportunities=["Growing market", "Strong differentiation"],
-            risks=["Execution risk", "Market timing risk"],
-            mitigation="Phase launches; validate with early users",
-        )
+        return _fallback_risks()
 

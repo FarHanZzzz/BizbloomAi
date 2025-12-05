@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
-from annoy import AnnoyIndex
+import faiss
 from sentence_transformers import SentenceTransformer
 
 from app.config import settings
@@ -17,22 +17,21 @@ class CompetitorIndex:
         self.dim = self.model.get_sentence_embedding_dimension()
 
     def load(self) -> None:
-        index_path = f"{settings.processed_dir}/startup_index.ann"
+        index_path = f"{settings.processed_dir}/startup_index.faiss"
         meta_path = f"{settings.processed_dir}/startup_metadata.csv"
         try:
-            self.index = AnnoyIndex(self.dim, "angular")
-            self.index.load(index_path)
+            self.index = faiss.read_index(index_path)
             self.metadata = pd.read_csv(meta_path).to_dict(orient="records")
-        except FileNotFoundError:
+        except (FileNotFoundError, RuntimeError):
             self.index = None
             self.metadata = []
 
     def query(self, text: str, k: int = 2) -> List[Tuple[int, float]]:
         if self.index is None:
             return []
-        vec = self.model.encode(text)
-        ids, distances = self.index.get_nns_by_vector(vec, k, include_distances=True)
-        return list(zip(ids, distances))
+        vec = self.model.encode(text).astype("float32").reshape(1, -1)
+        distances, ids = self.index.search(vec, k)
+        return list(zip(ids[0].tolist(), distances[0].tolist()))
 
 
 _global_index: CompetitorIndex | None = None
