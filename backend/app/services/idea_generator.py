@@ -1,5 +1,5 @@
 from typing import List
-
+import json
 from openai import OpenAI
 
 from app.config import settings
@@ -8,11 +8,12 @@ from app.models.schemas import RefinedIdea
 
 SYSTEM_PROMPT = """You generate exactly 3 refined startup ideas from a short user idea.
 Return STRICT JSON with keys: ideas -> list of 3 objects, each with name, problem, solution, value_proposition.
-No commentary. Keep sentences concise."""
+No commentary. Keep sentences concise. Example format:
+{"ideas": [{"name": "StartupName", "problem": "Problem statement", "solution": "Solution description", "value_proposition": "Value prop"}]}"""
 
 
 def _fallback_ideas() -> List[RefinedIdea]:
-    """Return demo ideas when OpenAI is unavailable."""
+    """Return demo ideas when API is unavailable."""
     return [
         RefinedIdea(
             name="Idea Alpha",
@@ -37,50 +38,55 @@ def _fallback_ideas() -> List[RefinedIdea]:
 
 def generate_refined_ideas(user_input: str) -> List[RefinedIdea]:
     # Check if API key is missing or placeholder
-    api_key = settings.openai_api_key
-    if not api_key or api_key.startswith("your-") or len(api_key) < 20:
+    api_key = settings.openrouter_api_key
+    if not api_key or api_key.startswith("sk-or-your") or len(api_key) < 20:
+        print("[INFO] No valid OpenRouter API key, using fallback ideas")
         return _fallback_ideas()
 
     try:
+        print(f"[INFO] Calling OpenRouter API with model: {settings.openrouter_model}")
+        
         client = OpenAI(
+            base_url=settings.openrouter_base_url,
             api_key=api_key,
-            base_url=settings.openai_base_url,  # Groq or any OpenAI-compatible API
         )
-        completion = client.chat.completions.create(
-            model=settings.model_name,
+        
+        response = client.chat.completions.create(
+            model=settings.openrouter_model,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_input},
+                {"role": "user", "content": f"Generate 3 startup ideas based on: {user_input}\n\nReturn ONLY valid JSON."}
             ],
-            temperature=0.2,
+            max_tokens=1000,
+            temperature=0.7,
         )
-        content = completion.choices[0].message.content
-        # Defensive parsing to structured Pydantic objects
-        import json
-
+        
+        content = response.choices[0].message.content or ""
+        print(f"[INFO] Received response: {content[:200]}...")
+        
+        # Try to extract JSON from response
         try:
-            payload = json.loads(content)
-            ideas_raw = payload.get("ideas", [])
-            refined = [RefinedIdea(**idea) for idea in ideas_raw][:3]
-            if len(refined) == 3:
-                return refined
-        except Exception:
-            pass
+            # Find JSON in response
+            start_idx = content.find('{')
+            end_idx = content.rfind('}') + 1
+            if start_idx != -1 and end_idx > start_idx:
+                json_str = content[start_idx:end_idx]
+                payload = json.loads(json_str)
+                ideas_raw = payload.get("ideas", [])
+                refined = [RefinedIdea(**idea) for idea in ideas_raw][:3]
+                if len(refined) >= 1:
+                    print(f"[INFO] Successfully parsed {len(refined)} ideas from API response")
+                    # Pad with fallback if needed
+                    while len(refined) < 3:
+                        refined.append(_fallback_ideas()[len(refined)])
+                    return refined
+        except Exception as e:
+            print(f"[WARN] JSON parsing failed: {e}")
 
-        # Fallback to first 3 parsed lines if JSON failed
-        fallback = []
-        for idx in range(3):
-            fallback.append(
-                RefinedIdea(
-                    name=f"Idea {idx+1}",
-                    problem="Problem unavailable due to parsing error.",
-                    solution="Solution unavailable due to parsing error.",
-                    value_proposition="Value proposition unavailable.",
-                )
-            )
-        return fallback
-    except Exception:
-        # API error (invalid key, rate limit, etc.) - return fallback
+        # Fallback to demo ideas if parsing failed
+        print("[WARN] Failed to parse response, using fallback ideas")
         return _fallback_ideas()
-
-
+        
+    except Exception as e:
+        print(f"[ERROR] OpenRouter API error: {e}")
+        return _fallback_ideas()

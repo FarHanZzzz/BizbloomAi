@@ -26,6 +26,11 @@ echo    Frontend: http://localhost:5173
 echo    Backend:  http://localhost:8000
 echo    API Docs: http://localhost:8000/docs
 echo.
+echo    ---- DEMO CREDENTIALS ----
+echo    Email:    demo@bizbloom.ai
+echo    Password: demo123
+echo    --------------------------
+echo.
 echo Close the terminal windows to stop the servers.
 echo ========================================
 echo.

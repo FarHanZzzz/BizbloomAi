@@ -46,9 +46,9 @@ class ValidationScore(BaseModel):
     market_readiness: str
 
 class ValidationRequest(BaseModel):
-    idea: RefinedIdea
-    market: MarketInsight
-    competitors: CompetitorSnapshot
+    idea: Optional[RefinedIdea] = None
+    market: Optional[MarketInsight] = None
+    competitors: Optional[CompetitorSnapshot] = None
 
 
 class PartnerProfile(BaseModel):

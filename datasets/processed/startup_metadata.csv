@@ -1,0 +1,41 @@
+name,category,description,funding
+Duolingo,EdTech,AI-powered language learning platform with gamification,Series F
+Coursera,EdTech,Online learning platform offering courses from top universities,IPO
+Khan Academy,EdTech,Free educational content and personalized learning tools,Non-profit
+Stripe,FinTech,Payment processing platform for internet businesses,Series I
+Plaid,FinTech,Financial infrastructure connecting apps to bank accounts,Series D
+Robinhood,FinTech,Commission-free stock trading mobile app,IPO
+Oscar Health,HealthTech,Technology-focused health insurance company,IPO
+Teladoc,HealthTech,Virtual healthcare platform for remote consultations,IPO
+Headspace,HealthTech,Mental health and meditation app,Series C
+Notion,Productivity,"All-in-one workspace for notes, docs, and collaboration",Series C
+Figma,Design,Collaborative interface design tool in the browser,Acquired
+Canva,Design,Online graphic design platform with templates,Series E
+Grammarly,AI Writing,AI-powered writing assistant for grammar and clarity,Series E
+Jasper AI,AI Writing,AI content creation platform for marketing teams,Series A
+Loom,Communication,Video messaging platform for async communication,Series C
+Calendly,Productivity,Automated scheduling tool for meetings,Series C
+Airtable,Productivity,Spreadsheet-database hybrid for team collaboration,Series F
+Webflow,Design,No-code website builder with CMS capabilities,Series C
+Vercel,Developer Tools,Frontend cloud platform for Next.js deployment,Series D
+GitHub Copilot,Developer Tools,AI pair programmer suggesting code completions,Microsoft
+Uber Eats,FoodTech,Food delivery platform from local restaurants,IPO
+DoorDash,FoodTech,On-demand food delivery service,IPO
+Instacart,FoodTech,Grocery delivery and pick-up service,IPO
+Airbnb,Travel,Online marketplace for lodging and tourism,IPO
+Booking.com,Travel,Travel fare aggregator and metasearch engine,Public
+Shopify,E-commerce,E-commerce platform for online stores,IPO
+Square,FinTech,Financial services and payment solutions,IPO
+Zoom,Communication,Video conferencing and communication platform,IPO
+Slack,Communication,Business communication and collaboration hub,Acquired
+Discord,Communication,"Voice, video, and text communication platform",Series H
+MongoDB,Developer Tools,NoSQL document database platform,IPO
+Snowflake,Data,Cloud data warehouse and analytics platform,IPO
+Databricks,Data,Unified analytics platform for data engineering,Series H
+Palantir,Data,Big data analytics platforms for enterprises,IPO
+Scale AI,AI Infrastructure,Data labeling and AI training platform,Series E
+Hugging Face,AI Infrastructure,Open-source AI model hub and tools,Series D
+OpenAI,AI Infrastructure,AI research lab developing GPT models,Series Unknown
+Anthropic,AI Infrastructure,AI safety company building Claude assistant,Series C
+Midjourney,AI Tools,AI image generation from text prompts,Self-funded
+Runway,AI Tools,AI video editing and generation platform,Series C
