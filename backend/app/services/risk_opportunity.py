@@ -31,7 +31,10 @@ def assess_risks(idea: RefinedIdea) -> RiskOpportunity:
         return _fallback_risks()
 
     try:
-        client = OpenAI(api_key=api_key)
+        client = OpenAI(
+            api_key=api_key,
+            base_url=settings.openai_base_url,  # Groq or any OpenAI-compatible API
+        )
         completion = client.chat.completions.create(
             model=settings.model_name,
             messages=[

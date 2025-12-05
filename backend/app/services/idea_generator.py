@@ -42,7 +42,10 @@ def generate_refined_ideas(user_input: str) -> List[RefinedIdea]:
         return _fallback_ideas()
 
     try:
-        client = OpenAI(api_key=api_key)
+        client = OpenAI(
+            api_key=api_key,
+            base_url=settings.openai_base_url,  # Groq or any OpenAI-compatible API
+        )
         completion = client.chat.completions.create(
             model=settings.model_name,
             messages=[
