@@ -16,12 +16,22 @@ security = HTTPBearer()
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 8
 
-# In-memory demo users for when Supabase is not configured
-_demo_users: dict = {}
+
 
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
+
+
+# In-memory demo users for when Supabase is not configured
+_demo_users: dict = {
+    "demo@bizbloom.ai": {
+        "id": "demo-user-id",
+        "email": "demo@bizbloom.ai",
+        "hashed_password": hash_password("demo123"),
+        "profile": {"name": "Demo User"},
+    }
+}
 
 
 def verify_password(password: str, hashed: str) -> bool:

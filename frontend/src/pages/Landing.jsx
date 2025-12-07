@@ -172,7 +172,7 @@ export default function Landing() {
           <h2>AI in Entrepreneurship</h2>
           <p>Commercially viable, AI-powered solution addressing startup challenges</p>
         </div>
-        
+ 
         <div className="focus-grid">
           <div className="focus-card analytics">
             <div className="focus-icon">📊</div>
